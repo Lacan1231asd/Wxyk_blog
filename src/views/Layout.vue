@@ -29,16 +29,10 @@
            </div>
         </div>
     </div>
-    
+
+    <Dialog :show="true" :buttons="buttons">这里是内容</Dialog>
     <div >
-      <div :style="{height:'200px', background:'red'}">1</div>
-      <div :style="{height:'200px', background:'blue'}">2</div>
-      <div :style="{height:'200px', background:'red'}">3</div>
-      <div :style="{height:'200px', background:'blue'}">2</div>
-      <div :style="{height:'200px', background:'red'}">3</div>
-      <div :style="{height:'200px', background:'blue'}">2</div>
-      <div :style="{height:'200px', background:'red'}">3</div>
-      <!-- <router-view /> -->
+      <router-view />
     </div>
   </div>
 </template>
@@ -115,6 +109,13 @@ const initScroll = () => {
     }
   });
 };
+
+const buttons = [
+  {
+    text:"确定",
+    type:"primary",
+  }
+]
 
 onMounted(()=>{
   initScroll();

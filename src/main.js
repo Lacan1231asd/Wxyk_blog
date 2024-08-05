@@ -13,6 +13,11 @@ import 'element-plus/dist/index.css'
 //图标 图标在附件中
 import '@/assets/icon/iconfont.css'
 
+//全局组件
+import Dialog from "@/components/Dialog.vue"
+
+
+
 const app = createApp(App)
 
 app.use(ElementPlus);
@@ -23,5 +28,7 @@ app.use(router)
 app.config.globalProperties.globalInfo = {
     bodyWidth: 1300,
 }
+
+app.component("Dialog", Dialog)
 
 app.mount('#app')
