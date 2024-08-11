@@ -1,0 +1,315 @@
+<template>
+  <div>
+    <Dialog
+      :show="dialogConfig.show"
+      :title="dialogConfig.title"
+      :buttons="dialogConfig.buttons"
+      width="400px"
+      :showCancel="false"
+      @close="dialogConfig.show = false"
+    >
+      <el-form
+        class="login-register"
+        :model="formData"
+        :rules="rules"
+        ref="formDataRef"
+        @submit.prevent
+      >
+        <!--input输入-->
+        <el-form-item prop="email">
+          <el-input
+            size="large"
+            clearable
+            placeholder="请输入邮箱"
+            v-model.trim="formData.email"
+          >
+            <template #prefix>
+              <span class="iconfont icon-account"></span>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 登录密码 -->
+        <el-form-item prop="password" v-if="opType == 1">
+          <el-input
+            :type="passwordEyeType.passwordEyeOpen ? 'text' : 'password'"
+            size="large"
+            placeholder="请输入密码"
+            v-model.trim="formData.password"
+          >
+            <template #prefix>
+              <span class="iconfont icon-password"></span>
+            </template>
+
+            <template #suffix>
+              <span
+                @click="eyeChange('passwordEyeOpen')"
+                :class="[
+                  'iconfont',
+                  passwordEyeType.passwordEyeOpen
+                    ? 'icon-eye'
+                    : 'icon-close-eye',
+                ]"
+              ></span>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 注册 -->
+        <div v-if="opType == 0 || opType == 2">
+          <el-form-item prop="emailCode">
+            <div class="send-emali-panel">
+              <el-input
+                size="large"
+                clearable
+                placeholder="请输入邮箱验证码"
+                v-model.trim="formData.emailCode"
+              >
+                <template #prefix>
+                  <span class="iconfont icon-checkcode"></span>
+                </template>
+              </el-input>
+
+              <el-button class="send-mail-btn" type="primary" size="large"
+                >获取验证码</el-button
+              >
+            </div>
+
+            <el-popover placement="left" :width="500" trigger="click">
+              <div>
+                <p>1、在垃圾箱中查找邮箱验证码</p>
+                <p>2、在邮箱中头像->设置->反垃圾->白名单->设置邮件地址白名单</p>
+                <p>3、将邮箱【1410762371@qq.com】添加到白名单</p>
+                <a
+                  href="http://easybbs.wuhancoder.com/post/46lrsLUQjQhpZyP"
+                  target="_blank"
+                  >不知道怎么设置</a
+                >
+              </div>
+              <template #reference>
+                <span class="a-link" :style="{ 'font-size': '14px' }"
+                  >未收到邮箱验证码？</span
+                >
+              </template>
+            </el-popover>
+          </el-form-item>
+
+          <el-form-item prop="nickName" v-if="opType == 0">
+            <el-input
+              size="large"
+              clearable
+              placeholder="请输入昵称"
+              v-model.trim="formData.nickName"
+            >
+              <template #prefix>
+                <span class="iconfont icon-account"></span>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item prop="registerPassword">
+            <el-input
+              :type="
+                passwordEyeType.registerPasswordEyeOpen ? 'text' : 'password'
+              "
+              size="large"
+              placeholder="请输入密码"
+              v-model.trim="formData.registerPassword"
+            >
+              <template #prefix>
+                <span class="iconfont icon-password"></span>
+              </template>
+
+              <template #suffix>
+                <span
+                  @click="eyeChange('registerPasswordEyeOpen')"
+                  :class="[
+                    'iconfont',
+                    passwordEyeType.registerPasswordEyeOpen
+                      ? 'icon-eye'
+                      : 'icon-close-eye',
+                  ]"
+                ></span>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item prop="reRegisterPassword">
+            <el-input
+              :type="
+                passwordEyeType.reRegisterPasswordEyeOpen ? 'text' : 'password'
+              "
+              size="large"
+              placeholder="请再次输入密码"
+              v-model.trim="formData.reRegisterPassword"
+            >
+              <template #prefix>
+                <span class="iconfont icon-password"></span>
+              </template>
+
+              <template #suffix>
+                <span
+                  @click="eyeChange('reRegisterPasswordEyeOpen')"
+                  :class="[
+                    'iconfont',
+                    passwordEyeType.reRegisterPasswordEyeOpen
+                      ? 'icon-eye'
+                      : 'icon-close-eye',
+                  ]"
+                ></span>
+              </template>
+            </el-input>
+          </el-form-item>
+        </div>
+
+        <el-form-item prop="checkCode">
+          <div class="check-code-panel">
+            <el-input
+              size="large"
+              clearable
+              placeholder="请输入验证码"
+              v-model.trim="formData.checkCode"
+            >
+              <template #prefix>
+                <span class="iconfont icon-checkcode"></span>
+              </template>
+            </el-input>
+
+            <img
+              :src="checkCodeUrl"
+              class="check-code"
+              @click="changeCheckCode(0)"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item v-if="opType == 1">
+          <div class="rememberme-panel">
+            <el-checkbox v-model="formData.remeberMe">记住我</el-checkbox>
+          </div>
+          <div class="no-account">
+            <a href="javascript:void(0)" class="a-link" @click="showPanel(2)"
+              >忘记密码？</a
+            >
+            <a href="javascript:void(0)" class="a-link" @click="showPanel(0)"
+              >没有账号？</a
+            >
+          </div>
+        </el-form-item>
+
+        <el-form-item v-if="opType == 0">
+          <a href="javascript:void(0)" class="a-link" @click="showPanel(1)"
+            >已有账号</a
+          >
+        </el-form-item>
+
+        <el-form-item v-if="opType == 2">
+          <a href="javascript:void(0)" class="a-link" @click="showPanel(1)"
+            >去登录</a
+          >
+        </el-form-item>
+
+        <el-form-item>
+          <el-button type="primary" class="op-btn">登录</el-button>
+        </el-form-item>
+      </el-form>
+    </Dialog>
+  </div>
+</template>
+
+<script setup>
+import { dialogEmits } from "element-plus";
+import { nextTick, TrackOpTypes } from "vue";
+import { ref, reactive, getCurrentInstance } from "vue";
+import { useRouter, useRoute } from "vue-router";
+const { proxy } = getCurrentInstance();
+const router = useRouter();
+const route = useRoute();
+
+const api = {
+  checkCode: "/api/checkCode",
+};
+
+//0:注册 1：登录 2：找回密码
+const opType = ref();
+
+const showPanel = (type) => {
+  opType.value = type;
+  resetForm();
+};
+defineExpose({ showPanel });
+
+//验证码
+const checkCodeUrl = ref(api.checkCode);
+const changeCheckCode = (type) => {
+  checkCodeUrl.value =
+    api.checkCode + "?type=" + "&time=" + new Date().getTime();
+};
+
+//密码显示隐藏操作
+const passwordEyeType = reactive({
+  passwordEyeOpen: false,
+  registerPasswordEyeOpen: false,
+  reRegisterPasswordEyeOpen: false,
+});
+
+const eyeChange = (type) => {
+  passwordEyeType[type] = !passwordEyeType[type];
+};
+
+const dialogConfig = reactive({
+  show: false,
+  title: "标题",
+});
+
+const formData = ref({});
+const formDataRef = ref();
+const rules = {
+  title: [{ required: true, message: "请输入内容" }],
+};
+
+//重置表单
+const resetForm = () => {
+  dialogConfig.show = true;
+  if (opType.value == 0) {
+    dialogConfig.title = "注册";
+  } else if (opType.value == 1) {
+    dialogConfig.title = "登录";
+  } else if (opType.value == 2) {
+    dialogConfig.title = "重置密码";
+  }
+  nextTick(() => {
+    changeCheckCode(0);
+    formDataRef.value.resetFields();
+  });
+};
+</script>
+
+<style lang="scss" scoped>
+.login-register {
+  .send-emali-panel {
+    display: flex;
+    widows: 100%;
+    justify-content: space-between;
+    .send-mail-btn {
+      margin-left: 5px;
+    }
+  }
+  .check-code-panel {
+    display: flex;
+    .check-code {
+      margin-left: 5px;
+      cursor: pointer;
+    }
+  }
+  .rememberme-panel {
+    width: 100%;
+  }
+  .no-account {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .op-btn {
+    width: 100%;
+  }
+}
+</style>

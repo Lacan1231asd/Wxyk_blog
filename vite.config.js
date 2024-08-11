@@ -18,7 +18,7 @@ export default defineConfig({
     hmr: true,
     port: 3004,
     proxy: {
-      "api": {
+      "/api": {
         target: "http://localhost:7070",
         changeOrigin: true,
         "^api": "/api"

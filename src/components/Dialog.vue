@@ -1,16 +1,16 @@
 <template>
   <div>
     <el-dialog
-
-    model-value="show"
+    class="cust-dialog"
+    :model-value="show"
     :show-close="showClose"
     :draggable="true"
     :close-on-click-modal="false"
     :title="title"
-    class="cust-dialog"
     :width="width"
     :top="top"
-  >
+    @close="close"
+    >
     
     <div class="dialog-body">
         <slot></slot>
@@ -56,11 +56,15 @@ const props = defineProps({
     }
 });
 
-const close = ()=>{}
+const emit  = defineEmits();
+const close = ()=>{
+    emit("close");
+}
 </script>
 
 <style lang="scss" scoped>
 .cust-dialog{
+    margin-bottom: 10px;  
     .el-dialog__body{
         padding:0px;
     }
@@ -69,6 +73,8 @@ const close = ()=>{}
         border-bottom: 1px solid #ddd;
         padding:15px;
         min-height: 100px;
+        max-height: calc(100vh - 260px);
+        overflow: auto;
     }
     .dialog-footer{
         text-align: right;
