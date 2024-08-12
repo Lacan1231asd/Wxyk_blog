@@ -1,4 +1,4 @@
-import './assets/base.scss'
+
 
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -12,6 +12,10 @@ import 'element-plus/dist/index.css'
 
 //图标 图标在附件中
 import '@/assets/icon/iconfont.css'
+import './assets/base.scss'
+
+//全局方法
+import Verify from './utils/Verify'
 
 //全局组件
 import Dialog from "@/components/Dialog.vue"
@@ -28,6 +32,8 @@ app.use(router)
 app.config.globalProperties.globalInfo = {
     bodyWidth: 1300,
 }
+
+app.config.globalProperties.Verify = Verify;
 
 app.component("Dialog", Dialog)
 
