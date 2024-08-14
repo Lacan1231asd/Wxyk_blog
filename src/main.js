@@ -16,6 +16,8 @@ import './assets/base.scss'
 
 //全局方法
 import Verify from './utils/Verify'
+import Message from './utils/Message'
+import Request from './utils/Request'
 
 //全局组件
 import Dialog from "@/components/Dialog.vue"
@@ -34,6 +36,8 @@ app.config.globalProperties.globalInfo = {
 }
 
 app.config.globalProperties.Verify = Verify;
+app.config.globalProperties.Message = Message;
+app.config.globalProperties.Request = Request;
 
 app.component("Dialog", Dialog)
 
