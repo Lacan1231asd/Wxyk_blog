@@ -28,7 +28,42 @@
               搜索<span class="iconfont icon-search"></span>
             </el-button>
           </div>
-          <el-button-group :style="{ 'margin-left': '10px' }">
+
+          <!-- 显示用户信息 -->
+          <template v-if="userInfo.userId">
+            <div class="message-info">
+              <el-dropdown>
+                <el-badge :value="12" class="item">
+                  <div class="iconfont icon-message"></div>
+                </el-badge>
+
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>回复我的</el-dropdown-item>
+                    <el-dropdown-item>赞了我的文章</el-dropdown-item>
+                    <el-dropdown-item>下载了我的附件</el-dropdown-item>
+                    <el-dropdown-item>赞了我的评论</el-dropdown-item>
+                    <el-dropdown-item>系统消息</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+
+            <div class="user-info">
+              <el-dropdown>
+                <avatar :userId="userInfo.userId" :width="50"></avatar>
+
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>我的主页</el-dropdown-item>
+                    <el-dropdown-item>退出</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+
+          <el-button-group :style="{ 'margin-left': '10px' }" v-else>
             <el-button type="primary" plain @click="loginAndRegister(1)"
               >登录</el-button
             >
@@ -51,11 +86,17 @@
 <script setup>
 import LoginAndRegister from "./LoginAndRegister.vue";
 import { buttonGroupContextKey, colorPickerContextKey } from "element-plus";
-import { ref, reactive, getCurrentInstance, onMounted } from "vue";
+import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useStore } from "vuex";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
+const store = useStore();
+
+const api = {
+  getUserInfo: "/getUserInfo",
+};
 
 const logoInfo = ref([
   {
@@ -130,7 +171,33 @@ const loginAndRegister = (type) => {
 
 onMounted(() => {
   initScroll();
+  getUserInfo();
 });
+
+//获取用户信息
+const getUserInfo = async () => {
+  let result = await proxy.Request({
+    url: api.getUserInfo,
+  });
+  if (!result) {
+    return;
+  }
+  store.commit("updateLoginUserInfo", result.data);
+};
+
+//监听 登录用户信息
+const userInfo = ref({});
+watch(
+  () => store.state.loginUserInfo,
+  (newVal, oldVal) => {
+    if (newVal != undefined && newVal != null) {
+      userInfo.value = newVal;
+    } else {
+      userInfo.value = {};
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -167,13 +234,25 @@ onMounted(() => {
       width: 300px;
       display: flex;
 
+      align-items: center;
+
       .op-btn {
-        .inconfont {
+        .iconfont {
           margin-left: 5px;
         }
 
         .el-button + .el-button {
           margin-left: 5px;
+        }
+      }
+
+      .message-info {
+        margin-left: 5px;
+        margin-right: 25px;
+        cursor: pointer;
+        .icon-message {
+          font-size: 25px;
+          color: rgb(147, 147, 147);
         }
       }
     }
