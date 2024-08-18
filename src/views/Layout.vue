@@ -16,7 +16,31 @@
         </router-link>
 
         <!-- 模块信息 -->
-        <div class="menu-panel"></div>
+        <div class="menu-panel">
+          <span class="menu-item">全部</span>
+          <template v-for="(board, index) in boardList" :key="index">
+            <el-popover
+              placement="bottom-start"
+              :width="300"
+              trigger="hover"
+              v-if="board.children.length > 0"
+            >
+              <template #reference>
+                <span class="menu-item">{{ board.boardName }}</span>
+              </template>
+
+              <div class="sub-board-list">
+                <span
+                  class="sub-board"
+                  v-for="(subBoard, index) in board.children"
+                  :key="index"
+                  >{{ subBoard.boardName }}</span
+                >
+              </div>
+            </el-popover>
+            <span class="menu-item" v-else>{{ board.boardName }}</span>
+          </template>
+        </div>
 
         <!-- 登录 注册 用户信息 -->
         <div class="user-info-panel">
@@ -75,7 +99,7 @@
       </div>
     </div>
 
-    <div>
+    <div class="body-content">
       <router-view />
     </div>
     <!-- 登录 注册 -->
@@ -96,6 +120,7 @@ const store = useStore();
 
 const api = {
   getUserInfo: "/getUserInfo",
+  loadBoard: "/board/loadBoard",
 };
 
 const logoInfo = ref([
@@ -185,6 +210,19 @@ const getUserInfo = async () => {
   store.commit("updateLoginUserInfo", result.data);
 };
 
+//获取板块信息
+const boardList = ref({});
+const loadBoard = async () => {
+  let result = await proxy.Request({
+    url: api.loadBoard,
+  });
+  if (!result) {
+    return;
+  }
+  boardList.value = result.data;
+};
+loadBoard();
+
 //监听 登录用户信息
 const userInfo = ref({});
 watch(
@@ -198,10 +236,22 @@ watch(
   },
   { immediate: true, deep: true }
 );
+
+//监听是否展示登录框
+watch(
+  () => store.state.showLogin,
+  (newVal, oldVal) => {
+    if (newVal) {
+      loginAndRegister(1);
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style lang="scss" scoped>
 .header {
+  top: 0px;
   width: 100%;
   position: fixed;
   box-shadow: 0 2px 6px #ddd;
@@ -228,6 +278,11 @@ watch(
 
     .menu-panel {
       flex: 1;
+
+      .menu-item {
+        margin-left: 20px;
+        cursor: pointer;
+      }
     }
 
     .user-info-panel {
@@ -257,5 +312,29 @@ watch(
       }
     }
   }
+}
+
+.sub-board-list {
+  display: flex;
+  flex-wrap: wrap;
+  .sub-board {
+    padding: 0px 10px;
+    border-radius: 20px;
+    margin-right: 10px;
+    background: rgb(239, 239, 239);
+    border: 1px solid #ddd;
+    color: rgb(119, 118, 118);
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
+  .sub-board:hover {
+    color: var(--link);
+  }
+}
+
+.body-content {
+  margin-top: 60px;
+  position: relative;
 }
 </style>

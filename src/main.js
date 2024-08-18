@@ -24,6 +24,8 @@ import Request from './utils/Request'
 //全局组件
 import Dialog from "@/components/Dialog.vue"
 import Avatar from './components/Avatar.vue'
+import Cover from './components/Cover.vue'
+import DataList from './components/DataList.vue'
 
 
 
@@ -38,6 +40,7 @@ app.use(store)
 app.config.globalProperties.globalInfo = {
     bodyWidth: 1300,
     avatarUrl: "/api/file/getAvatar/",
+    imageUrl: "/api/file/getImage/"
 }
 
 app.config.globalProperties.Verify = Verify;
@@ -46,5 +49,7 @@ app.config.globalProperties.Request = Request;
 
 app.component("Dialog", Dialog);
 app.component("Avatar", Avatar);
+app.component("Cover", Cover);
+app.component("DataList", DataList);
 
 app.mount('#app')
