@@ -22,13 +22,19 @@
 }
 
 :root {
-  --link: #007fff
+  --link: #007fff;
+  --pink: #FF6699;
+  --text2: #61666d;
 }
 
 body {
   padding: 0;
   margin: 0;
   background: rgb(243, 243, 243);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 .a-link {

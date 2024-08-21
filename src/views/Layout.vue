@@ -17,7 +17,14 @@
 
         <!-- 模块信息 -->
         <div class="menu-panel">
-          <span class="menu-item">全部</span>
+          <router-link
+            :class="[
+              'menu-item home',
+              activePboardId == undefined ? 'active' : '',
+            ]"
+            to="/"
+            >首页</router-link
+          >
           <template v-for="(board, index) in boardList" :key="index">
             <el-popover
               placement="bottom-start"
@@ -26,19 +33,38 @@
               v-if="board.children.length > 0"
             >
               <template #reference>
-                <span class="menu-item">{{ board.boardName }}</span>
+                <span
+                  :class="[
+                    'menu-item',
+                    board.boardId == activePboardId ? 'active' : '',
+                  ]"
+                  @click="boardClickHandler(board)"
+                  >{{ board.boardName }}</span
+                >
               </template>
 
               <div class="sub-board-list">
                 <span
-                  class="sub-board"
+                  :class="[
+                    'sub-board',
+                    subBoard.boardId == activeBoardId ? 'active' : '',
+                  ]"
                   v-for="(subBoard, index) in board.children"
                   :key="index"
+                  @click="subBoardClickHandler(subBoard)"
                   >{{ subBoard.boardName }}</span
                 >
               </div>
             </el-popover>
-            <span class="menu-item" v-else>{{ board.boardName }}</span>
+            <span
+              :class="[
+                'menu-item',
+                board.boardId == activePboardId ? 'active' : '',
+              ]"
+              v-else
+              @click="boardClickHandler(board)"
+              >{{ board.boardName }}</span
+            >
           </template>
         </div>
 
@@ -109,13 +135,16 @@
 
 <script setup>
 import LoginAndRegister from "./LoginAndRegister.vue";
-import { buttonGroupContextKey, colorPickerContextKey } from "element-plus";
+import {
+  buttonGroupContextKey,
+  colorPickerContextKey,
+  useFocusController,
+} from "element-plus";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-const route = useRoute();
 const store = useStore();
 
 const api = {
@@ -220,6 +249,7 @@ const loadBoard = async () => {
     return;
   }
   boardList.value = result.data;
+  store.commit("saveBoardList", result.data);
 };
 loadBoard();
 
@@ -244,6 +274,37 @@ watch(
     if (newVal) {
       loginAndRegister(1);
     }
+  },
+  { immediate: true, deep: true }
+);
+
+//板块点击
+const boardClickHandler = (board) => {
+  router.push(`/forum/${board.boardId}`);
+};
+
+//二级板块
+const subBoardClickHandler = (subBoard) => {
+  router.push(`/forum/${subBoard.pBoardId}/${subBoard.boardId}`);
+};
+
+//当前选中的板块
+const activePboardId = ref(0);
+watch(
+  () => store.state.activePboardId,
+  (newVal, oldVal) => {
+    if (newVal != 0) {
+      activePboardId.value = newVal;
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+const activeBoardId = ref(0);
+watch(
+  () => store.state.activeBoardId,
+  (newVal, oldVal) => {
+    activeBoardId.value = newVal;
   },
   { immediate: true, deep: true }
 );
@@ -283,6 +344,16 @@ watch(
         margin-left: 20px;
         cursor: pointer;
       }
+      .home {
+        text-decoration: none;
+        color: #000;
+      }
+      .active {
+        color: var(--link);
+      }
+      // .router-link-exact-active {
+      //   color: var(--link);
+      // }
     }
 
     .user-info-panel {
@@ -330,6 +401,13 @@ watch(
 
   .sub-board:hover {
     color: var(--link);
+  }
+  .active {
+    background: var(--link);
+    color: #fff;
+  }
+  .active:hover {
+    color: #fff;
   }
 }
 

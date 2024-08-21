@@ -20,12 +20,16 @@ import './assets/base.scss'
 import Verify from './utils/Verify'
 import Message from './utils/Message'
 import Request from './utils/Request'
+import Utils from './utils/Utils'
+import Confirm from './utils/Confirm'
 
 //全局组件
 import Dialog from "@/components/Dialog.vue"
 import Avatar from './components/Avatar.vue'
 import Cover from './components/Cover.vue'
 import DataList from './components/DataList.vue'
+import NoData from './components/NoData.vue'
+import ImageViewer from './components/ImageViewer.vue'
 
 
 
@@ -46,10 +50,14 @@ app.config.globalProperties.globalInfo = {
 app.config.globalProperties.Verify = Verify;
 app.config.globalProperties.Message = Message;
 app.config.globalProperties.Request = Request;
+app.config.globalProperties.Utils = Utils;
+app.config.globalProperties.Confirm = Confirm;
 
 app.component("Dialog", Dialog);
 app.component("Avatar", Avatar);
 app.component("Cover", Cover);
 app.component("DataList", DataList);
+app.component("NoData", NoData);
+app.component("ImageViewer", ImageViewer);
 
 app.mount('#app')
