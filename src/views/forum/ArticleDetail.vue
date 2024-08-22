@@ -80,7 +80,13 @@
         </div>
       </div>
       <!-- 评论 -->
-      <div class="comment-panel" id="view-comment"></div>
+      <div class="comment-panel" id="view-comment">
+        <CommentList
+          v-if="articleInfo.articleId"
+          :articleId="articleInfo.articleId"
+          :articleUserId="articleInfo.userId"
+        ></CommentList>
+      </div>
     </div>
   </div>
   <!-- 左侧快捷操作 -->
@@ -119,6 +125,9 @@
 </template>
 
 <script setup>
+import hljs from "highlight.js";
+import "highlight.js/styles/atom-one-light.css"; //样式
+import CommentList from "./CommentList.vue";
 import { ref, reactive, getCurrentInstance, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -154,8 +163,13 @@ const getArticleDetail = async (articleId) => {
   attachment.value = result.data.attachment;
   haveLike.value = result.data.haveLike;
 
+  store.commit("setActivePboardId", result.data.forumArticle.pBoardId);
+  store.commit("setActiveBoardId", result.data.forumArticle.boardId);
+
   //图片预览
   imagePreview();
+  //代码高亮
+  highlightCode();
 };
 
 onMounted(() => {
@@ -262,6 +276,16 @@ const imagePreview = () => {
     previewImgList.value = imageList;
   });
 };
+
+//代码高亮
+const highlightCode = () => {
+  nextTick(() => {
+    let blocks = document.querySelectorAll("pre code");
+    blocks.forEach((item) => {
+      hljs.highlightBlock(item);
+    });
+  });
+};
 </script>
 
 <style lang="scss">
@@ -352,6 +376,7 @@ const imagePreview = () => {
     .comment-panel {
       margin-top: 20px;
       background: #fff;
+      padding: 20px;
     }
   }
 }

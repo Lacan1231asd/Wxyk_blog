@@ -20,13 +20,34 @@ const prosp = defineProps({
 const previewImgIndex = ref(null);
 
 const show = (index) => {
+  stopScroll();
   previewImgIndex.value = index;
 };
 
 defineExpose({ show });
 
-const closeImgViewer = () => {};
+const closeImgViewer = () => {
+  startScroll();
+  previewImgIndex.value = null;
+};
+
+//禁止滚动
+const stopScroll = () => {
+  document.body.style.overflow = "hidden";
+};
+
+//开始滚动
+const startScroll = () => {
+  document.body.style.overflow = "auto";
+};
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" >
+.image-viewer {
+  .el-image-viewer__mask {
+    opacity: 0.7;
+  }
+}
 </style>
+
+
