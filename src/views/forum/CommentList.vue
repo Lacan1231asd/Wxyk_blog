@@ -10,46 +10,38 @@
     </div>
     <!-- 发送评论 -->
     <div class="comment-form-panel">
-      <Avatar :width="50" :userId="currentUserInfo.userId"></Avatar>
-      <div class="comment-form">
-        <el-form
-          :model="formData"
-          :rules="rules"
-          ref="formDataRef"
-          @submit.prevent
-        >
-          <!--textarea输入-->
-          <el-form-item prop="content">
-            <el-input
-              clearable
-              placeholder="请文明发言，做一个帮帮的程序员"
-              type="textarea"
-              :maxlength="150"
-              resize="none"
-              show-word-limit
-              v-model.trim="formData.content"
-            ></el-input>
-
-            <div class="insert-img" v-if="currentUserInfo.userId">
-              <el-upload
-                name="file"
-                :show-file-list="false"
-                accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG,.gif,.GIF,.bmp,.BMP"
-                :multiple="false"
-                :http-request="selectImg"
-              >
-                <span class="iconfont icon-image"></span>
-              </el-upload>
-            </div>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div class="send-btn">发表</div>
+      <PostComment
+        :articleId="articleId"
+        :pCommentId="0"
+        :avatarWidth="50"
+        :userId="currentUserInfo.userId"
+        :showInsertImg="currentUserInfo.userId != null"
+        @postCommentFinish="postCommentFinish"
+      ></PostComment>
+    </div>
+    <div class="comment-list">
+      <DataList
+        :dataSource="commentListInfo"
+        :loading="loading"
+        @loadData="loadComment"
+      >
+        <template #default="{ data }">
+          <CommentListItem
+            :articleId="articleId"
+            :commentData="data"
+            :articleUserId="articleUserId"
+            :currentUserId="currentUserInfo.userId"
+            @hiddenAllReply="hiddenAllReplyHandler"
+          ></CommentListItem>
+        </template>
+      </DataList>
     </div>
   </div>
 </template>
 
 <script setup>
+import PostComment from "./PostComment.vue";
+import CommentListItem from "./CommentListItem.vue";
 import { ref, reactive, getCurrentInstance, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -67,15 +59,49 @@ const props = defineProps({
   },
 });
 
-//form信息
-const formData = ref({});
-const formDataRef = ref();
-const rules = {
-  content: [{ required: true, message: "请输入评论内容" }],
+const api = {
+  loadComment: "/comment/loadComment",
+  postComment: "/comment/postComment",
+  doLike: "/comment/doLike",
+  changeTopType: "/comment/changeTopType",
 };
 
-//选择图片
-const selectImg = () => {};
+//排序
+const orderType = ref(0);
+
+//评论列表
+const loading = ref(null);
+const commentListInfo = ref({});
+
+const loadComment = async () => {
+  let params = {
+    pageNo: commentListInfo.value.pageNo,
+    articleId: props.articleId,
+    orderType: orderType.value,
+  };
+  let result = await proxy.Request({
+    url: api.loadComment,
+    params,
+  });
+  loading.value = false;
+  if (!result) {
+    return;
+  }
+  commentListInfo.value = result.data;
+};
+loadComment();
+
+//隐藏所有回复框
+const hiddenAllReplyHandler = () => {
+  commentListInfo.value.list.forEach((element) => {
+    element.showReply = false;
+  });
+};
+
+//评论发布完成
+const postCommentFinish = (resultData) => {
+  commentListInfo.value.list.unshift(resultData);
+};
 
 //当前用户信息
 const currentUserInfo = ref({});
@@ -103,31 +129,6 @@ watch(
   }
   .comment-form-panel {
     margin-top: 20px;
-    display: flex;
-    align-items: top;
-    .comment-form {
-      flex: 1;
-      margin: 0px 10px;
-      .el-textarea__inner {
-        height: 60px;
-      }
-      .insert-img {
-        line-height: normal;
-        .iconfont {
-          margin-top: 3px;
-          font-size: 20px;
-        }
-      }
-    }
-    .send-btn {
-      width: 60px;
-      height: 60px;
-      background: var(--link);
-      color: #fff;
-      text-align: center;
-      line-height: 60px;
-      border-radius: 5px;
-    }
   }
 }
 </style>
