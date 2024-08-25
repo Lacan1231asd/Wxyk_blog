@@ -12,7 +12,7 @@
         <el-form-item prop="content">
           <el-input
             clearable
-            :placeholder="placeholerInfo"
+            :placeholder="placeholderInfo"
             type="textarea"
             :maxlength="150"
             resize="none"
@@ -21,7 +21,15 @@
           ></el-input>
 
           <div class="insert-img" v-if="showInsertImg">
+            <div class="pre-img" v-if="commentImg">
+              <CommentImage :src="commentImg"></CommentImage>
+              <span
+                class="iconfont icon-remove"
+                @click="removeCommentImg"
+              ></span>
+            </div>
             <el-upload
+              v-else
               name="file"
               :show-file-list="false"
               accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG,.gif,.GIF,.bmp,.BMP"
@@ -39,6 +47,7 @@
 </template>
 
 <script setup>
+import CommentImage from "./CommentImage.vue";
 import { ref, reactive, getCurrentInstance } from "vue";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
@@ -66,7 +75,7 @@ const props = defineProps({
   showInsertImg: {
     type: Boolean,
   },
-  placeholerInfo: {
+  placeholderInfo: {
     type: String,
     default: "请文明发言，做一个帮帮的程序员",
   },
@@ -103,7 +112,22 @@ const postCommentDo = () => {
 };
 
 //选择图片
-const selectImg = () => {};
+const commentImg = ref(null);
+const selectImg = (file) => {
+  file = file.file;
+  let img = new FileReader();
+  img.readAsDataURL(file);
+  img.onload = ({ target }) => {
+    let imgData = target.result;
+    commentImg.value = imgData;
+    formData.value.image = file;
+  };
+};
+
+const removeCommentImg = () => {
+  commentImg.value = null;
+  formData.value.image = null;
+};
 </script>
 
 <style lang="scss">
@@ -121,6 +145,18 @@ const selectImg = () => {};
       .iconfont {
         margin-top: 3px;
         font-size: 20px;
+        color: #3f3f3f;
+      }
+      .pre-img {
+        margin-top: 10px;
+        position: relative;
+        .iconfont {
+          cursor: pointer;
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          color: rgb(121, 121, 121);
+        }
       }
     }
   }

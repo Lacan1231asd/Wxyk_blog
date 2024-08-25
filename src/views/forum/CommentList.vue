@@ -10,14 +10,14 @@
     </div>
     <!-- 发送评论 -->
     <div class="comment-form-panel">
-      <PostComment
+      <CommentPost
         :articleId="articleId"
         :pCommentId="0"
         :avatarWidth="50"
         :userId="currentUserInfo.userId"
         :showInsertImg="currentUserInfo.userId != null"
         @postCommentFinish="postCommentFinish"
-      ></PostComment>
+      ></CommentPost>
     </div>
     <div class="comment-list">
       <DataList
@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import PostComment from "./PostComment.vue";
+import CommentPost from "./CommentPost.vue";
 import CommentListItem from "./CommentListItem.vue";
 import { ref, reactive, getCurrentInstance, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";

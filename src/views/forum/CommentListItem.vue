@@ -3,13 +3,24 @@
     <Avatar :userId="commentData.userId" :width="50"></Avatar>
     <div class="comment-info">
       <div class="nick-name">
-        <span class="name">{{ commentData.nickName }}</span>
+        <span class="name" @click="gotoUcenter(commentData.userId)">{{
+          commentData.nickName
+        }}</span>
         <span class="tag-author" v-if="commentData.userId == articleUserId"
           >作者</span
         >
       </div>
       <div class="comment-content">
-        <span v-html="commentData.content"></span>
+        <div v-html="commentData.content"></div>
+
+        <CommentImage
+          :style="{ 'margin-top': '10px' }"
+          v-if="commentData.imgPath"
+          :src="
+            proxy.globalInfo.imageUrl + commentData.imgPath.replace('.', '_.')
+          "
+          :imgList="[proxy.globalInfo.imageUrl + commentData.imgPath]"
+        ></CommentImage>
       </div>
       <div class="op-panel">
         <div class="time">
@@ -18,10 +29,19 @@
             >&nbsp;·&nbsp;{{ commentData.userIpAddress }}</span
           >
         </div>
-        <div class="iconfont icon-good">
+        <div
+          :class="[
+            'iconfont icon-good',
+            commentData.likeType == 1 ? 'active' : '',
+          ]"
+          @click="doLike(commentData)"
+        >
           {{ commentData.goodCount > 0 ? commentData.goodCount : "点赞" }}
         </div>
-        <div class="iconfont icon-comment" @click="showReplyPanel(commentData)">
+        <div
+          class="iconfont icon-comment"
+          @click="showReplyPanel(commentData, 0)"
+        >
           回复
         </div>
         <el-dropdown v-if="articleUserId == currentUserId">
@@ -33,27 +53,81 @@
           </template>
         </el-dropdown>
       </div>
+
+      <div class="comment-sub-list" v-if="commentData.children">
+        <div
+          class="comment-sub-item"
+          v-for="(sub, index) in commentData.children"
+          :key="index"
+        >
+          <Avatar :userId="sub.userId" :width="30"></Avatar>
+          <div class="comment-sub-info">
+            <div class="nick-name">
+              <span class="name" @click="gotoUcenter(sub.userId)">{{
+                sub.nickName
+              }}</span>
+              <span class="tag-author" v-if="sub.userId == articleUserId"
+                >作者</span
+              >
+              <span class="reply-name">回复</span>
+              <span @click="gotoUcenter(sub.replyUserId)" class="a-link"
+                >@{{ sub.replyNickName }}</span
+              >
+              <span>：</span>
+              <span class="sub-content" v-html="sub.content"></span>
+            </div>
+            <div class="op-panel">
+              <div class="time">
+                <span>{{ sub.postTime }}</span>
+                <span class="address"
+                  >&nbsp;·&nbsp;{{ sub.userIpAddress }}</span
+                >
+              </div>
+              <div
+                :class="[
+                  'iconfont icon-good',
+                  sub.likeType == 1 ? 'active' : '',
+                ]"
+                @click="doLike(sub)"
+              >
+                {{ sub.goodCount > 0 ? sub.goodCount : "点赞" }}
+              </div>
+              <div
+                class="iconfont icon-comment"
+                @click="showReplyPanel(sub, 1)"
+              >
+                回复
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="reply-info" v-if="commentData.showReply">
-        <PostComment
+        <CommentPost
+          :placeholderInfo="placeholderInfo"
           :articleId="articleId"
           :pCommentId="pCommentId"
           :replyUserId="replyUserId"
           :avatarWidth="30"
           :userId="currentUserId"
           :showInsertImg="false"
-          @hiddenAllReply="hiddenAllReplyHandler"
-        ></PostComment>
+          :postCommentFinish="postCommentFinish"
+        ></CommentPost>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import CommentImage from "./CommentImage.vue";
 import { ref, reactive, getCurrentInstance } from "vue";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 
-import PostComment from "./PostComment.vue";
+import CommentPost from "./CommentPost.vue";
+import Avatar from "@/components/Avatar.vue";
+
+const router = useRouter();
 const props = defineProps({
   articleId: {
     type: String,
@@ -69,20 +143,55 @@ const props = defineProps({
   },
 });
 
+const api = {
+  doLike: "/comment/doLike",
+};
+
 const emit = defineEmits(["hiddenAllReply"]);
 //显示评论框
 const pCommentId = ref(0);
 const replyUserId = ref(null);
-const showReplyPanel = (curData) => {
-  const haveShow = curData.showReply == undefined ? false : curData.showReply;
+const placeholderInfo = ref(null);
+
+const showReplyPanel = (curData, type) => {
+  const haveShow =
+    props.commentData.showReply == undefined
+      ? false
+      : props.commentData.showReply;
   emit("hiddenAllReply");
-  curData.showReply = !haveShow;
-  pCommentId.value = curData.commentId;
+  if (type == 0) {
+    props.commentData.showReply = !haveShow;
+  } else {
+    props.commentData.showReply = true;
+  }
+  pCommentId.value = props.commentData.commentId;
+  replyUserId.value = curData.userId;
+  placeholderInfo.value = "回复 @" + curData.nickName;
 };
 
 const postCommentFinish = (resultData) => {
-  const children = props.commentData.children || [];
-  children.unshift(resultData);
+  props.commentData.children = resultData;
+  placeholderInfo.value = undefined;
+};
+
+const gotoUcenter = (userId) => {
+  router.push(`/user/${userId}`);
+};
+
+//点赞
+const doLike = async (data) => {
+  let result = await proxy.Request({
+    url: api.doLike,
+    showLoading: false,
+    params: {
+      commentId: data.commentId,
+    },
+  });
+  if (!result) {
+    return;
+  }
+  data.goodCount = result.data.goodCount;
+  data.likeType = result.data.likeType;
 };
 </script>
 
@@ -131,6 +240,28 @@ const postCommentFinish = (resultData) => {
       }
       .iconfont::before {
         margin-right: 3px;
+      }
+      .active {
+        color: var(--link);
+      }
+    }
+    .comment-sub-list {
+      margin-top: 10px;
+      .comment-sub-item {
+        display: flex;
+        margin: 8px 0px;
+        font-size: 14px;
+        .comment-sub-info {
+          margin-left: 5px;
+          .nick-name {
+            .reply-name {
+              margin: 0px 5px;
+            }
+            .sub-content {
+              font-size: 15px;
+            }
+          }
+        }
       }
     }
     .reply-info {
