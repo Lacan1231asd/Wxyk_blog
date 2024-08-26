@@ -85,6 +85,7 @@
           v-if="articleInfo.articleId"
           :articleId="articleInfo.articleId"
           :articleUserId="articleInfo.userId"
+          @updateCommentCount="updateCommentCount"
         ></CommentList>
       </div>
     </div>
@@ -285,6 +286,11 @@ const highlightCode = () => {
       hljs.highlightBlock(item);
     });
   });
+};
+
+//更新评论数量
+const updateCommentCount = (commentCount) => {
+  articleInfo.value.commentCount = commentCount;
 };
 </script>
 

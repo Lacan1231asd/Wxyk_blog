@@ -25,6 +25,14 @@ const router = createRouter({
         name: "文章详情",
         component: () => import('@/views/forum/ArticleDetail.vue')
       }, {
+        path: '/newPost',
+        name: "发布文章",
+        component: () => import('@/views/forum/EditPost.vue')
+      }, {
+        path: '/editPost/:articleId',
+        name: "编辑文章",
+        component: () => import('@/views/forum/EditPost.vue')
+      }, {
         path: '/user/:userId',
         name: "用户信息",
         component: () => import('@/views/ucenter/Ucenter.vue')

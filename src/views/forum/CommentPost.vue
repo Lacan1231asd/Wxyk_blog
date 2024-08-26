@@ -47,6 +47,7 @@
 </template>
 
 <script setup>
+import { valueEquals } from "element-plus";
 import CommentImage from "./CommentImage.vue";
 import { ref, reactive, getCurrentInstance } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -82,10 +83,20 @@ const props = defineProps({
 });
 
 //form信息
+const checkPostComment = (rule, value, callback) => {
+  if (value == null && formData.value.image == null) {
+    callback(new Error(rule.message));
+  } else {
+    callback();
+  }
+};
 const formData = ref({});
 const formDataRef = ref();
 const rules = {
-  content: [{ required: true, message: "请输入评论内容" }],
+  content: [
+    { required: true, message: "请输入评论内容", validator: checkPostComment },
+    { min: 5, message: "评论至少5个字" },
+  ],
 };
 
 const emit = defineEmits(["postCommentFinish"]);
@@ -107,6 +118,7 @@ const postCommentDo = () => {
     }
     proxy.Message.success("评论发表成功");
     formDataRef.value.resetFields();
+    removeCommentImg();
     emit("postCommentFinish", result.data);
   });
 };
