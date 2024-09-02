@@ -36,7 +36,7 @@ const props = defineProps({
 
 const emit = defineEmits();
 const change = (markdownContent, htmlContent) => {
-  emit("update:modeValue", markdownContent);
+  emit("update:modelValue", markdownContent);
   emit("htmlContent", htmlContent);
 };
 
