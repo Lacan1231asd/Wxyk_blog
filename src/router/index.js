@@ -36,6 +36,10 @@ const router = createRouter({
         path: '/user/:userId',
         name: "用户信息",
         component: () => import('@/views/ucenter/Ucenter.vue')
+      }, {
+        path: '/user/message/:type',
+        name: "消息",
+        component: () => import('@/views/ucenter/MessageList.vue')
       }]
     }
   ]

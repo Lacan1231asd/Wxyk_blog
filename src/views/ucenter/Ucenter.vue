@@ -12,7 +12,13 @@
       <div class="user-side">
         <!-- 头像信息 -->
         <div class="avatar-panel">
-          <div class="edit-btn a-link" v-if="isCurrentUser">修改资料</div>
+          <div
+            class="edit-btn a-link"
+            v-if="isCurrentUser"
+            @click="updateUserInfo"
+          >
+            修改资料
+          </div>
           <div class="avatar-inner">
             <Avatar :userId="userInfo.userId" :width="120"></Avatar>
           </div>
@@ -29,7 +35,11 @@
         <div class="user-extend-panel">
           <div class="info-item">
             <div class="label iconfont icon-integral">积分</div>
-            <div class="value a-link" v-if="isCurrentUser">
+            <div
+              class="value a-link"
+              v-if="isCurrentUser"
+              @click="showIntegralRecord"
+            >
               {{ userInfo.currentIntegral }}
             </div>
             <div v-else class="value">{{ userInfo.currentIntegral }}</div>
@@ -58,13 +68,35 @@
           <el-tab-pane label="评论" :name="1"></el-tab-pane>
           <el-tab-pane label="点赞" :name="2"></el-tab-pane>
         </el-tabs>
-        <div class="article-list"></div>
+        <div class="article-list">
+          <DataList
+            :loading="loading"
+            :dataSource="articleListInfo"
+            @loadData="loadArticle"
+            noDataMsg="暂无相关文章"
+          >
+            <template #default="{ data }"
+              ><ArticleListItem :data="data"></ArticleListItem>
+            </template>
+          </DataList>
+        </div>
       </div>
     </div>
+    <!-- 修改用户信息 -->
+    <UcenterEditUserInfo
+      ref="ucenterEditUserInfoRef"
+      @resetUserInfo="resetUserInfoHandler"
+    ></UcenterEditUserInfo>
+
+    <!-- 用户积分记录 -->
+    <UserIntegralRecord ref="ucenterIntegralRecordRef"></UserIntegralRecord>
   </div>
 </template>
 
 <script setup>
+import ArticleListItem from "@/views/forum/ArticleListItem.vue";
+import UcenterEditUserInfo from "./UcenterEditUserInfo.vue";
+import UserIntegralRecord from "./UserIntegralRecord.vue";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -75,6 +107,7 @@ const store = useStore();
 
 const api = {
   getUserInfo: "/ucenter/getUserInfo",
+  loadUserArticle: "/ucenter/loadUserArticle",
 };
 const userId = ref(null);
 const userInfo = ref({});
@@ -94,6 +127,34 @@ const loadUserInfo = async () => {
     return;
   }
   userInfo.value = result.data;
+};
+
+//右侧文章
+const activeTabName = ref(0);
+const changeTab = (type) => {
+  activeTabName.value = type;
+  loadArticle();
+};
+
+const loading = ref(false);
+const articleListInfo = ref({});
+const loadArticle = async () => {
+  loading.value = true;
+  let params = {
+    pageNo: articleListInfo.value.pageNo,
+    type: activeTabName.value,
+    userId: userId.value,
+  };
+  let result = await proxy.Request({
+    url: api.loadUserArticle,
+    params: params,
+    showLoading: false,
+  });
+  loading.value = false;
+  if (!result) {
+    return;
+  }
+  articleListInfo.value = result.data;
 };
 
 const isCurrentUser = ref(false);
@@ -121,14 +182,27 @@ watch(
       userId.value = newVal;
       resetCurrentUser();
       loadUserInfo();
+      loadArticle();
     }
   },
   { immediate: true, deep: true }
 );
 
-//右侧文章
-const activeTabName = ref(0);
-const changeTab = () => {};
+//修改用户信息
+const ucenterEditUserInfoRef = ref(null);
+const updateUserInfo = () => {
+  ucenterEditUserInfoRef.value.showEditUserInfoDialog(userInfo.value);
+};
+
+const resetUserInfoHandler = (data) => {
+  userInfo.value = data;
+};
+
+//获取用户积分记录
+const ucenterIntegralRecordRef = ref(null);
+const showIntegralRecord = () => {
+  ucenterIntegralRecordRef.value.showRecord();
+};
 </script>
 
 <style lang="scss">
@@ -194,6 +268,8 @@ const changeTab = () => {};
     }
     .article-panel {
       flex: 1;
+      background: #fff;
+      padding: 0px 10px 10px 10px;
     }
   }
 }

@@ -89,11 +89,21 @@
 
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item>回复我的</el-dropdown-item>
-                    <el-dropdown-item>赞了我的文章</el-dropdown-item>
-                    <el-dropdown-item>下载了我的附件</el-dropdown-item>
-                    <el-dropdown-item>赞了我的评论</el-dropdown-item>
-                    <el-dropdown-item>系统消息</el-dropdown-item>
+                    <el-dropdown-item @click="gotoMessage('reply')"
+                      >回复我的</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('likePost')"
+                      >赞了我的文章</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('downloadAttachment')"
+                      >下载了我的附件</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('likeComment')"
+                      >赞了我的评论</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('sys')"
+                      >系统消息</el-dropdown-item
+                    >
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -316,6 +326,11 @@ const newPost = () => {
   } else {
     router.push("newPost");
   }
+};
+
+//消息相关
+const gotoMessage = (type) => {
+  router.push(`/user/message/${type}`);
 };
 </script>
 
