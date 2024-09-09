@@ -12,6 +12,8 @@ export default createStore({
         activePboardId: 0,
         //当前二级板块
         activeBoardId: 0,
+        //消息数量
+        messageCountInfo: {},
     },
     getters: {
         getLoginUserInfo: (state) => {
@@ -33,6 +35,9 @@ export default createStore({
         },
         getActiveBoardId: (state) => {
             return state.activeBoardId;
+        },
+        getMessageCountInfo: (state) => {
+            return state.messageCountInfo;
         }
     },
     mutations: {
@@ -52,6 +57,14 @@ export default createStore({
         },
         setActiveBoardId: (state, value) => {
             state.activeBoardId = value;
+        },
+        //设置消息数
+        updateMessageCountInfo: (state, value) => {
+            state.messageCountInfo = value;
+        },
+        readMessage: (state, value) => {
+            state.messageCountInfo.total = state.messageCountInfo.total - state.messageCountInfo[value]
+            state.messageCountInfo[value] = 0;
         }
     },
     actions: {},
