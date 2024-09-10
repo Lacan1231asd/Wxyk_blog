@@ -48,7 +48,10 @@
           noDataMsg="没有发现帖子,赶紧发布一个吧"
         >
           <template #default="{ data }"
-            ><ArticleListItem :data="data"></ArticleListItem>
+            ><ArticleListItem
+              :data="data"
+              :showComment="showComment"
+            ></ArticleListItem>
           </template>
         </DataList>
       </div>
@@ -129,6 +132,17 @@ watch(
   () => store.state.boardList,
   (newVal, oldVal) => {
     setSubBoard();
+  },
+  { immediate: true, deep: true }
+);
+
+const showComment = ref(false);
+watch(
+  () => store.state.sysSetting,
+  (newVal, oldVal) => {
+    if (newVal) {
+      showComment.value = newVal.commentOpen;
+    }
   },
   { immediate: true, deep: true }
 );

@@ -23,6 +23,7 @@
       layout="prev,pager,next"
       @current-change="handlePageNochange"
       style="text-align: right"
+      :page-size="15"
     >
     </el-pagination>
   </div>

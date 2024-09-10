@@ -14,6 +14,8 @@ export default createStore({
         activeBoardId: 0,
         //消息数量
         messageCountInfo: {},
+        //系统设置
+        sysSetting: {},
     },
     getters: {
         getLoginUserInfo: (state) => {
@@ -38,7 +40,8 @@ export default createStore({
         },
         getMessageCountInfo: (state) => {
             return state.messageCountInfo;
-        }
+        },
+
     },
     mutations: {
         updateLoginUserInfo(state, value) {
@@ -65,6 +68,9 @@ export default createStore({
         readMessage: (state, value) => {
             state.messageCountInfo.total = state.messageCountInfo.total - state.messageCountInfo[value]
             state.messageCountInfo[value] = 0;
+        },
+        saveSysSetting: (state, value) => {
+            state.sysSetting = value;
         }
     },
     actions: {},

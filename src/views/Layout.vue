@@ -74,7 +74,7 @@
             <el-button type="primary" class="op-btn" @click="newPost">
               发帖<span class="iconfont icon-add"></span>
             </el-button>
-            <el-button type="primary" class="op-btn">
+            <el-button type="primary" class="op-btn" @click="goSearch">
               搜索<span class="iconfont icon-search"></span>
             </el-button>
           </div>
@@ -202,8 +202,47 @@
     <div class="body-content">
       <router-view />
     </div>
+
+    <div class="footer" v-if="showFooter">
+      <div
+        class="footer-content"
+        :style="{ width: proxy.globalInfo.bodyWidth + 'px' }"
+      >
+        <el-row>
+          <el-col :span="6" class="item">
+            <div class="logo">
+              <div class="logo-letter">
+                <span
+                  v-for="(item, index) in logoInfo"
+                  :key="index"
+                  :style="{ color: item.color }"
+                  >{{ item.letter }}</span
+                >
+              </div>
+              <div class="info">一个干货满满的变成社区</div>
+            </div>
+          </el-col>
+          <el-col :span="6" class="item">
+            <div class="title">网站相关</div>
+            <div>
+              <div><a href="###">网站相关</a></div>
+              <div><a href="###">网站相关</a></div>
+              <div><a href="###">网站相关</a></div>
+            </div>
+          </el-col>
+          <el-col :span="6" class="item">
+            <div class="title">友情链接</div>
+          </el-col>
+          <el-col :span="6" class="item">
+            <div class="title">关注站长</div>
+          </el-col>
+        </el-row>
+      </div>
+    </div>
     <!-- 登录 注册 -->
     <LoginAndRegister ref="loginRegisterRef"></LoginAndRegister>
+    <!-- 回到顶部 -->
+    <el-backtop :right="100" :bottom="100"></el-backtop>
   </div>
 </template>
 
@@ -215,10 +254,11 @@ import {
   useFocusController,
 } from "element-plus";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
+const route = useRoute();
 const store = useStore();
 
 const api = {
@@ -226,6 +266,7 @@ const api = {
   loadBoard: "/board/loadBoard",
   loadMessageCount: "/ucenter/getMessageCount",
   logout: "/logout",
+  getSysSetting: "/getSysSetting",
 };
 
 const logoInfo = ref([
@@ -302,6 +343,7 @@ const loginAndRegister = (type) => {
 onMounted(() => {
   initScroll();
   getUserInfo();
+  loadSysSetting();
 });
 
 //获取用户信息
@@ -445,9 +487,38 @@ const logout = () => {
     store.commit("updateLoginUserInfo", null);
   });
 };
+
+//获取系统配置
+const loadSysSetting = async () => {
+  let result = await proxy.Request({
+    url: api.getSysSetting,
+  });
+  if (!result) {
+    return;
+  }
+  store.commit("saveSysSetting", result.data);
+};
+
+const goSearch = () => {
+  router.push("/search");
+};
+
+//是否展示底部
+const showFooter = ref(true);
+watch(
+  () => route.path,
+  (newVal, oldVal) => {
+    if (newVal.indexOf("newPost") != -1 || newVal.indexOf("editPost") != -1) {
+      showFooter.value = false;
+    } else {
+      showFooter.value = true;
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .header {
   top: 0px;
   width: 100%;
@@ -551,6 +622,7 @@ const logout = () => {
 .body-content {
   margin-top: 60px;
   position: relative;
+  min-height: calc(100vh - 210px);
 }
 
 .message-item {
@@ -570,6 +642,39 @@ const logout = () => {
     text-align: center;
     color: #fff;
     margin-left: 10px;
+  }
+}
+
+.footer {
+  background: #e9e9e9;
+  height: 140px;
+  margin-top: 10px;
+  .footer-content {
+    margin: 0px auto;
+    padding-top: 10px;
+    .item {
+      text-align: left;
+      .title {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      a {
+        font-size: 14px;
+        text-decoration: none;
+        color: var(--text2);
+        line-height: 25px;
+      }
+    }
+
+    .logo {
+      .logo-letter {
+        font-size: 30px;
+      }
+      .info {
+        margin-top: 10px;
+        color: rgb(93, 91, 91);
+      }
+    }
   }
 }
 </style>

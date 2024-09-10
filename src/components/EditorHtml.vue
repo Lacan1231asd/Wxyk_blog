@@ -22,7 +22,9 @@ import "@wangeditor/editor/dist/css/style.css"; //引入css
 import { onBeforeUnmount, ref, shallowRef } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import { getCurrentInstance } from "vue";
+import { useStore } from "vuex";
 const { proxy } = getCurrentInstance();
+const store = useStore();
 
 const props = defineProps({
   modelValue: {

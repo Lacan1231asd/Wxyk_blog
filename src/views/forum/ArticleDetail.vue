@@ -29,8 +29,10 @@
       <div class="article-detail">
         <!-- 标题 -->
         <div class="title">
+          <span class="tag tag-no-audit" v-if="articleInfo.status == 0"
+            >待审核</span
+          >
           {{ articleInfo.title }}
-          <el-tag v-if="articleInfo.status == 0" type="danger">待审核</el-tag>
         </div>
         <!-- 用户信息 -->
         <div class="user-info">
@@ -92,7 +94,11 @@
         </div>
       </div>
       <!-- 评论 -->
-      <div class="comment-panel" id="view-comment">
+      <div
+        class="comment-panel"
+        id="view-comment"
+        v-if="showComment && articleInfo.status == 1"
+      >
         <CommentList
           v-if="articleInfo.articleId"
           :articleId="articleInfo.articleId"
@@ -141,11 +147,16 @@
 
     <!-- 评论 -->
     <el-badge
+      v-if="showComment"
       :value="articleInfo.commentCount"
       type="info"
       :hidden="!articleInfo.commentCount > 0"
     >
-      <div class="quick-item" @click="goToPostion('view-comment')">
+      <div
+        class="quick-item"
+        @click="goToPostion('view-comment')"
+        v-if="showComment"
+      >
         <span class="iconfont icon-comment"></span>
       </div>
     </el-badge>
@@ -415,6 +426,17 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", listenerScroll, false);
 });
+
+const showComment = ref(false);
+watch(
+  () => store.state.sysSetting,
+  (newVal, oldVal) => {
+    if (newVal) {
+      showComment.value = newVal.commentOpen;
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style lang="scss">
